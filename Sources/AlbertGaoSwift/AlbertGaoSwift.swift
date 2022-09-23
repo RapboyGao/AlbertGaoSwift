@@ -1,5 +1,7 @@
 // swift-tools-version: 5.7
 
+import Foundation
+
 public struct AlbertGaoSwift {
     public private(set) var text = "Hello, World!"
 
@@ -7,6 +9,11 @@ public struct AlbertGaoSwift {
 }
 
 public enum AGao {
+    enum AGaoErrors: Error {
+        case stringNotNumeric
+        case invalidNumberOfSeparators
+    }
+
     ///  - parameter source The source to be turned into String
     ///  - parameter front How many numbers do you want to keep before the decimal
     ///  - parameter aft How many numbers do you want to keep after the decimal.
@@ -58,7 +65,7 @@ public enum AGao {
     ///  - parameter aft How many numbers do you want to keep after the decimal.
     ///                 If it's 0, "." will be omitted. Defaults to 0.
     ///  - returns The string with at least enough zeros added in the front or the end without modifying its accuracy.
-    static func keep0sInt(_ source: Int, _ front: Int, _ aft: Int = 0) -> String {
+    static func keep0sInt(_ source: Int, _ front: Int = 2, _ aft: Int = 0) -> String {
         var finalStr = "" // 最终连起来的数组
         let isMinus: Bool = source < 0 // 是否为负数
         if isMinus {
@@ -78,4 +85,67 @@ public enum AGao {
         }
         return finalStr
     }
+
+    static func isNumeric(_ source: String) -> Bool {
+        if let _ = Double(source) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    static func get60FromStrings(_ source: String, separator: Character = ":", base: Double = 60) throws -> Double {
+        let isMinus = source.hasPrefix("-")
+        let subStrings: [Substring] = source.split(separator: separator)
+        var result = 0.0
+
+        for (index, value) in subStrings.reversed().enumerated() {
+            // 必须全部都能被Parse为Double否则就不是数字
+            guard let toAdd = Double(value) else {
+                throw AGaoErrors.stringNotNumeric
+            }
+            result += pow(base, Double(index)) * abs(toAdd)
+        }
+        return isMinus ? -result : result
+    }
+
+    static func getStringFrom60(_ source: Double,
+                                numberOfSeparators: Int = 1,
+                                separator: (Int) -> String = { _ in ":" },
+                                numberFormatter: (Double, Int) -> String = { num, _ in keep0sDouble(num, 2) },
+                                base: Double = 60) -> String
+    {
+        if numberOfSeparators <= 0 {
+            return numberFormatter(source, 0)
+        } else {
+            /// 该source是否为负数
+            let isMinus = source.isLess(than: 0)
+            /// 该source的绝对值，后面会逐渐减少
+            var absValue = isMinus ? -source : source
+            /// 将result分为若干的Double
+            var result: String = ""
+            for index in 0 ... numberOfSeparators {
+                /// numberOfSeparators ... 0 倒着来
+                let thisLevel: Int = numberOfSeparators - index
+                /// 被除数
+                let divider: Double = pow(base, Double(thisLevel))
+                /// 当前Level被整除后的数字
+                let valueOfThisLevel: Double = floor(absValue / divider)
+                /// 当前level
+                let formattedValueOfThisLevel = numberFormatter(valueOfThisLevel, thisLevel)
+                absValue -= divider * valueOfThisLevel
+                if thisLevel < numberOfSeparators {
+                    let thisSeparator: String = separator(thisLevel)
+                    result.append(thisSeparator)
+                }
+                result.append(formattedValueOfThisLevel)
+            }
+            return result
+        }
+    }
+
+    static func sumOf60s(_ source: String ...,
+                         numberOfSeparators: Int = 1,
+                         numberFormatter: (Double, Int) -> String = { num, _ in keep0sDouble(num, 2) },
+                         base: Double = 60) {}
 }
