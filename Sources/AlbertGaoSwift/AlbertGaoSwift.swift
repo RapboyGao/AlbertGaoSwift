@@ -9,7 +9,8 @@ public struct AlbertGaoSwift {
 public enum AGao {
     ///  - parameter source The source to be turned into String
     ///  - parameter front How many numbers do you want to keep before the decimal
-    ///  - parameter aft How many numbers do you want to keep after the decimal. If it's 0, "." will be omitted. Defaults to 0.
+    ///  - parameter aft How many numbers do you want to keep after the decimal.
+    ///                 If it's 0, "." will be omitted. Defaults to 0.
     ///  - returns The string with at least enough zeros added in the front or the end without modifying its accuracy.
     static func keep0sDouble(_ source: Double, _ front: Int, _ aft: Int = 0) -> String {
         var finalStr = "" // 最终连起来的数组
@@ -54,7 +55,8 @@ public enum AGao {
 
     ///  - parameter source The source to be turned into String
     ///  - parameter front How many numbers do you want to keep before the decimal
-    ///  - parameter aft How many numbers do you want to keep after the decimal. If it's 0, "." will be omitted. Defaults to 0.
+    ///  - parameter aft How many numbers do you want to keep after the decimal.
+    ///                 If it's 0, "." will be omitted. Defaults to 0.
     ///  - returns The string with at least enough zeros added in the front or the end without modifying its accuracy.
     static func keep0sInt(_ source: Int, _ front: Int, _ aft: Int = 0) -> String {
         var finalStr = "" // 最终连起来的数组
