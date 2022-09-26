@@ -1,4 +1,5 @@
 @testable import AlbertGaoSwift
+import JavaScriptCore
 import XCTest
 
 final class AlbertGaoSwiftTests: XCTestCase {
@@ -14,11 +15,11 @@ final class AlbertGaoSwiftTests: XCTestCase {
 
 //        let test1 = try! AGao.sumOf60s(["00:100", "1:2:00"], separators: ["°", "′"])
 //        print(test1)
-        let test2 =
-            AGao.separate("Albert, Albert, New", by: try! NSRegularExpression(pattern: "Albert", options: .caseInsensitive))
-        //                       01234567890123
-        print(test2)
-        print(test2.joined())
-        print(AGao.toRawRegPattern("(Hello)"))
+//        let jsVM = JSVirtualMachine()
+//        let jsContext = JSContext(virtualMachine: jsVM)
+//        jsContext?.setObject(AGao.self, forKeyedSubscript: "AGao" as (NSCopying & NSObjectProtocol))
+//        let result = jsContext?.evaluateScript("AGao.")
+//        print(result as Any)
+        print(Atmos.calculateQNH(height: 500, qfe: 1013))
     }
 }

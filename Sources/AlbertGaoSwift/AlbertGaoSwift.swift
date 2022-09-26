@@ -1,12 +1,7 @@
-// swift-tools-version: 5.7
-
 import Foundation
 
-public struct AlbertGaoSwift {
-    public private(set) var text = "Hello, World!"
-
-    public init() {}
-}
+// swift-tools-version: 5.7
+import JavaScriptCore
 
 public enum AGao {
     enum AGaoErrors: Error {
@@ -17,9 +12,9 @@ public enum AGao {
     ///  - parameter source The source to be turned into String
     ///  - parameter front How many numbers do you want to keep before the decimal
     ///  - parameter aft How many numbers do you want to keep after the decimal.
-    ///                 If it's 0, "." will be omitted. Defaults to 0.
+    ///                 If its 0, "." will be omitted. Defaults to 0.
     ///  - returns The string with at least enough zeros added in the front or the end without modifying its accuracy.
-    static func keep0sDouble(_ source: Double, _ front: Int, _ aft: Int = 0) -> String {
+    public static func keep0sDouble(_ source: Double, _ front: Int, _ aft: Int = 0) -> String {
         var finalStr = "" // 最终连起来的数组
         let isMinus: Bool = source < 0 // 是否为负数
         if isMinus {
@@ -63,9 +58,9 @@ public enum AGao {
     ///  - parameter source The source to be turned into String
     ///  - parameter front How many numbers do you want to keep before the decimal
     ///  - parameter aft How many numbers do you want to keep after the decimal.
-    ///                 If it's 0, "." will be omitted. Defaults to 0.
+    ///                 If its 0, "." will be omitted. Defaults to 0.
     ///  - returns The string with at least enough zeros added in the front or the end without modifying its accuracy.
-    static func keep0sInt(_ source: Int, _ front: Int = 2, _ aft: Int = 0) -> String {
+    public static func keep0sInt(_ source: Int, _ front: Int = 2, _ aft: Int = 0) -> String {
         var finalStr = "" // 最终连起来的数组
         let isMinus: Bool = source < 0 // 是否为负数
         if isMinus {
@@ -87,7 +82,7 @@ public enum AGao {
     }
 
     /// Detects if a string is numeric or not
-    static func isNumeric(_ source: String) -> Bool {
+    public static func isNumeric(_ source: String) -> Bool {
         if Double(source) != nil {
             return true
         } else {
@@ -99,7 +94,7 @@ public enum AGao {
     /// - parameter separator : The separator used to parse the string. Defaults to ":".
     /// - parameter base : The system you are using to parse the source. Defaults to 60.
     /// - returns The number calculated by the source. For instance, "2:30" would result in 150.
-    static func get60FromStrings(_ source: String, separator: Character = ":", base: Double = 60) throws -> Double {
+    public static func get60FromStrings(_ source: String, separator: Character = ":", base: Double = 60) throws -> Double {
         let isMinus = source.hasPrefix("-")
         let subStrings: [Substring] = source.split(separator: separator)
         var result = 0.0
@@ -120,10 +115,10 @@ public enum AGao {
     ///                     The first argument is the number itself.
     ///            The second argument is the number of power of 60 that the current number is using.
     /// - parameter base : The system you are using to finalize the result. Defaults to 60.
-    static func getStringFrom60(_ source: Double,
-                                separators: [String] = [":"],
-                                numberFormatter: (Double, Int) -> String = { num, _ in keep0sDouble(num, 2) },
-                                base: Double = 60) -> String
+    public static func getStringFrom60(_ source: Double,
+                                       separators: [String] = [":"],
+                                       numberFormatter: (Double, Int) -> String = { num, _ in keep0sDouble(num, 2) },
+                                       base: Double = 60) -> String
     {
         let numberOfSeparators = separators.count
         if numberOfSeparators <= 0 {
@@ -162,11 +157,11 @@ public enum AGao {
     ///                  The first argument is the number itself.
     ///                  The second argument is the number of power of 60 that the current number is using.
     /// - parameter base : The system you are using to finalize the result. Defaults to 60.
-    static func sumOf60s(_ source: [String],
-                         separatorOfSource separator: Character = ":",
-                         separators: [String] = [":"],
-                         numberFormatter: (Double, Int) -> String = { num, _ in keep0sDouble(num, 2) },
-                         base: Double = 60)
+    public static func sumOf60s(_ source: [String],
+                                separatorOfSource separator: Character = ":",
+                                separators: [String] = [":"],
+                                numberFormatter: (Double, Int) -> String = { num, _ in keep0sDouble(num, 2) },
+                                base: Double = 60)
         throws -> String
     {
         var sumOfResult = 0.0
@@ -182,9 +177,9 @@ public enum AGao {
     /// - parameter source : The string to be separated.
     /// - parameter reg : The regular expression to separate the source.
     /// - returns The source string is separated into whatever matches the regular expression
-    ///                 as well as those that doesn't match.
+    ///                 as well as those that doesnt match.
     ///                 The result.joined() should == source .
-    static func separate(_ source: String, by reg: NSRegularExpression) -> [String] {
+    public static func separate(_ source: String, by reg: NSRegularExpression) -> [String] {
         let matchResult = reg.matches(in: source, range: NSRange(location: 0, length: source.count))
         var lastStart = 0
         var finalResult: [String] = []
@@ -217,7 +212,7 @@ public enum AGao {
     /// - parameter source The string to parse.
     /// - returns The source converted to its reg pattern.
     ///  for example : toRawRegPattern( "[Hello]" ) -> #"\[Hello\]"#
-    static func toRawRegPattern(_ source: String) -> String {
+    public static func toRawRegPattern(_ source: String) -> String {
         return source
             .replacingOccurrences(of: #"$"#, with: #"\$"#)
             .replacingOccurrences(of: #"("#, with: #"\("#)
