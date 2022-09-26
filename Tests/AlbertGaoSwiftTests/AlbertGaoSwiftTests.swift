@@ -12,8 +12,7 @@ final class AlbertGaoSwiftTests: XCTestCase {
 
         print(AGao.keep0sInt(2, 0, 0))
 
-        let test0 = try! AGao.get60FromStrings("-210:30")
-        let test1 = AGao.getStringFrom60(test0, numberOfSeparators: 2)
+        let test1 = try! AGao.sumOf60s(["00:100", "1:2:00"], separators: ["°", "′"])
         print(test1)
     }
 }

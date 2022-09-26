@@ -86,14 +86,19 @@ public enum AGao {
         return finalStr
     }
 
+    /// Detects if a string is numeric or not
     static func isNumeric(_ source: String) -> Bool {
-        if let _ = Double(source) {
+        if Double(source) != nil {
             return true
         } else {
             return false
         }
     }
 
+    /// - parameter source : A sexagesimal string
+    /// - parameter separator : The separator used to parse the string. Defaults to ":".
+    /// - parameter base : The system you are using to parse the source. Defaults to 60.
+    /// - returns The number calculated by the source. For instance, "2:30" would result in 150.
     static func get60FromStrings(_ source: String, separator: Character = ":", base: Double = 60) throws -> Double {
         let isMinus = source.hasPrefix("-")
         let subStrings: [Substring] = source.split(separator: separator)
@@ -109,12 +114,18 @@ public enum AGao {
         return isMinus ? -result : result
     }
 
+    /// - parameter source : A sexagesimal string
+    /// - parameter separators : The separators used to join the numbers together.
+    /// - parameter numberFormatter : How each number would look like.
+    ///                     The first argument is the number itself.
+    ///            The second argument is the number of power of 60 that the current number is using.
+    /// - parameter base : The system you are using to finalize the result. Defaults to 60.
     static func getStringFrom60(_ source: Double,
-                                numberOfSeparators: Int = 1,
-                                separator: (Int) -> String = { _ in ":" },
+                                separators: [String] = [":"],
                                 numberFormatter: (Double, Int) -> String = { num, _ in keep0sDouble(num, 2) },
                                 base: Double = 60) -> String
     {
+        let numberOfSeparators = separators.count
         if numberOfSeparators <= 0 {
             return numberFormatter(source, 0)
         } else {
@@ -123,7 +134,7 @@ public enum AGao {
             /// 该source的绝对值，后面会逐渐减少
             var absValue = isMinus ? -source : source
             /// 将result分为若干的Double
-            var result: String = ""
+            var result = ""
             for index in 0 ... numberOfSeparators {
                 /// numberOfSeparators ... 0 倒着来
                 let thisLevel: Int = numberOfSeparators - index
@@ -134,18 +145,37 @@ public enum AGao {
                 /// 当前level
                 let formattedValueOfThisLevel = numberFormatter(valueOfThisLevel, thisLevel)
                 absValue -= divider * valueOfThisLevel
-                if thisLevel < numberOfSeparators {
-                    let thisSeparator: String = separator(thisLevel)
+                result.append(formattedValueOfThisLevel)
+                if index < numberOfSeparators {
+                    let thisSeparator: String = separators[index]
                     result.append(thisSeparator)
                 }
-                result.append(formattedValueOfThisLevel)
             }
             return result
         }
     }
 
-    static func sumOf60s(_ source: String ...,
-                         numberOfSeparators: Int = 1,
+    /// - parameter source : Sexagesimal strings
+    /// - parameter separatorOfSource : The separator used to parse the string. Defaults to ":".
+    /// - parameter separators : The separators used to join the numbers (of the result) together.
+    /// - parameter numberFormatter : How each number would look like.
+    ///                  The first argument is the number itself.
+    ///                  The second argument is the number of power of 60 that the current number is using.
+    /// - parameter base : The system you are using to finalize the result. Defaults to 60.
+    static func sumOf60s(_ source: [String],
+                         separatorOfSource separator: Character = ":",
+                         separators: [String] = [":"],
                          numberFormatter: (Double, Int) -> String = { num, _ in keep0sDouble(num, 2) },
-                         base: Double = 60) {}
+                         base: Double = 60)
+        throws -> String
+    {
+        var sumOfResult = 0.0
+        for str in source {
+            guard let item = try? get60FromStrings(str, separator: separator, base: base) else {
+                throw AGaoErrors.invalidNumberOfSeparators
+            }
+            sumOfResult += item
+        }
+        return getStringFrom60(sumOfResult, separators: separators, numberFormatter: numberFormatter, base: base)
+    }
 }
