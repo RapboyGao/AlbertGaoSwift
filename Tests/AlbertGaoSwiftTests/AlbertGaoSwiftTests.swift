@@ -8,11 +8,17 @@ final class AlbertGaoSwiftTests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
 //        XCTAssertEqual(AlbertGaoSwift().text, "Hello, World")
-        print(AGao.keep0sDouble(5, 0, 0))
+//        print(AGao.keep0sDouble(5, 0, 0))
+//
+//        print(AGao.keep0sInt(2, 0, 0))
 
-        print(AGao.keep0sInt(2, 0, 0))
-
-        let test1 = try! AGao.sumOf60s(["00:100", "1:2:00"], separators: ["°", "′"])
-        print(test1)
+//        let test1 = try! AGao.sumOf60s(["00:100", "1:2:00"], separators: ["°", "′"])
+//        print(test1)
+        let test2 =
+            AGao.separate("Albert, Albert, New", by: try! NSRegularExpression(pattern: "Albert", options: .caseInsensitive))
+        //                       01234567890123
+        print(test2)
+        print(test2.joined())
+        print(AGao.toRawRegPattern("(Hello)"))
     }
 }

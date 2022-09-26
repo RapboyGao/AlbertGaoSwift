@@ -178,4 +178,61 @@ public enum AGao {
         }
         return getStringFrom60(sumOfResult, separators: separators, numberFormatter: numberFormatter, base: base)
     }
+
+    /// - parameter source : The string to be separated.
+    /// - parameter reg : The regular expression to separate the source.
+    /// - returns The source string is separated into whatever matches the regular expression
+    ///                 as well as those that doesn't match.
+    ///                 The result.joined() should == source .
+    static func separate(_ source: String, by reg: NSRegularExpression) -> [String] {
+        let matchResult = reg.matches(in: source, range: NSRange(location: 0, length: source.count))
+        var lastStart = 0
+        var finalResult: [String] = []
+        for result in matchResult {
+            let start: Int = result.range.location
+            let lengthOfRange: Int = result.range.length
+            if lastStart < start - 1 {
+                // 上次的结果的下一个index比start要小
+                // 证明中间夹了一个字符串
+                let startingIndexOfStringInBetween: String.Index = source.index(source.startIndex, offsetBy: lastStart)
+                let endingIndexOfStringInBetween: String.Index =
+                    source.index(startingIndexOfStringInBetween, offsetBy: start - lastStart)
+                let ranging = startingIndexOfStringInBetween ..< endingIndexOfStringInBetween
+                finalResult.append(String(source[ranging]))
+            }
+            let startingIndex: String.Index = source.index(source.startIndex, offsetBy: start)
+            let endingIndex: String.Index = source.index(startingIndex, offsetBy: lengthOfRange)
+            let ranging = startingIndex ..< endingIndex
+            finalResult.append(String(source[ranging]))
+            lastStart = result.range.upperBound
+        }
+        if lastStart < source.count - 1 {
+            let startingIndex: String.Index = source.index(source.startIndex, offsetBy: lastStart)
+            let ranging = startingIndex ..< source.endIndex
+            finalResult.append(String(source[ranging]))
+        }
+        return finalResult
+    }
+
+    /// - parameter source The string to parse.
+    /// - returns The source converted to its reg pattern.
+    ///  for example : toRawRegPattern( "[Hello]" ) -> #"\[Hello\]"#
+    static func toRawRegPattern(_ source: String) -> String {
+        return source
+            .replacingOccurrences(of: #"$"#, with: #"\$"#)
+            .replacingOccurrences(of: #"("#, with: #"\("#)
+            .replacingOccurrences(of: #")"#, with: #"\)"#)
+            .replacingOccurrences(of: #"*"#, with: #"\*"#)
+            .replacingOccurrences(of: #"+"#, with: #"\+"#)
+            .replacingOccurrences(of: #"."#, with: #"\."#)
+            .replacingOccurrences(of: #"["#, with: #"\["#)
+            .replacingOccurrences(of: #"]"#, with: #"\]"#)
+            .replacingOccurrences(of: #"?"#, with: #"\?"#)
+            .replacingOccurrences(of: #"^"#, with: #"\^"#)
+            .replacingOccurrences(of: #"|"#, with: #"\|"#)
+            .replacingOccurrences(of: #"{"#, with: #"\{"#)
+            .replacingOccurrences(of: #"}"#, with: #"\}"#)
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: #"/"#, with: "\\/")
+    }
 }
