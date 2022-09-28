@@ -20,6 +20,5 @@ final class AlbertGaoSwiftTests: XCTestCase {
 //        jsContext?.setObject(AGao.self, forKeyedSubscript: "AGao" as (NSCopying & NSObjectProtocol))
 //        let result = jsContext?.evaluateScript("AGao.")
 //        print(result as Any)
-        print(Atmos.calculateQNH(height: 500, qfe: 1013))
     }
 }

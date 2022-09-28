@@ -1,10 +1,8 @@
+// swift-tools-version: 5.7
 import Foundation
 
-// swift-tools-version: 5.7
-import JavaScriptCore
-
 public enum AGao {
-    enum AGaoErrors: Error {
+    public enum AGaoErrors: Error {
         case stringNotNumeric
         case invalidNumberOfSeparators
     }
@@ -162,7 +160,7 @@ public enum AGao {
                                 separators: [String] = [":"],
                                 numberFormatter: (Double, Int) -> String = { num, _ in keep0sDouble(num, 2) },
                                 base: Double = 60)
-        throws -> String
+        throws -> (inStr: String, inDouble: Double)
     {
         var sumOfResult = 0.0
         for str in source {
@@ -171,7 +169,10 @@ public enum AGao {
             }
             sumOfResult += item
         }
-        return getStringFrom60(sumOfResult, separators: separators, numberFormatter: numberFormatter, base: base)
+        return (
+            inStr: getStringFrom60(sumOfResult, separators: separators, numberFormatter: numberFormatter, base: base),
+            inDouble: sumOfResult
+        )
     }
 
     /// - parameter source : The string to be separated.
