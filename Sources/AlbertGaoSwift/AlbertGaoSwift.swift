@@ -7,6 +7,56 @@ public enum AGao {
         case invalidNumberOfSeparators
     }
 
+    /// Loads Json inside the project
+    public static func loadJsonInApp<T: Decodable>(_ fileName: String) -> T {
+        let data: Data
+
+        guard let file = Bundle.main.url(forResource: fileName, withExtension: nil)
+        else {
+            fatalError("Couldn't find \(fileName) in main bundle.")
+        }
+
+        do {
+            data = try Data(contentsOf: file)
+        } catch {
+            fatalError("Couldn't load \(fileName) from main bundle:\n\(error)")
+        }
+
+        do {
+            let decoder = JSONDecoder()
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            fatalError("Couldn't parse \(fileName) as \(T.self):\n\(error)")
+        }
+    }
+
+    public static func saveJson(jsonObject: some Encodable, toFilename filename: String) throws -> Bool {
+        let fm = FileManager.default
+        let urls = fm.urls(for: .documentDirectory, in: .userDomainMask)
+        if let url = urls.first {
+            var fileURL = url.appendingPathComponent(filename)
+            fileURL = fileURL.appendingPathExtension("json")
+            let data = try JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted])
+            try data.write(to: fileURL, options: [.atomicWrite])
+            return true
+        }
+
+        return false
+    }
+
+    public static func loadJSON(withFilename filename: String) throws -> Any? {
+        let fm = FileManager.default
+        let urls = fm.urls(for: .documentDirectory, in: .userDomainMask)
+        if let url = urls.first {
+            var fileURL = url.appendingPathComponent(filename)
+            fileURL = fileURL.appendingPathExtension("json")
+            let data = try Data(contentsOf: fileURL)
+            let jsonObject = try JSONSerialization.jsonObject(with: data, options: [.mutableContainers, .mutableLeaves])
+            return jsonObject
+        }
+        return nil
+    }
+
     ///  - parameter source The source to be turned into String
     ///  - parameter front How many numbers do you want to keep before the decimal
     ///  - parameter aft How many numbers do you want to keep after the decimal.
@@ -88,6 +138,9 @@ public enum AGao {
         }
     }
 
+    public static let defaultFormatter: (Double, Int) -> String
+        = { num, _ in keep0sDouble(num, 2) }
+
     /// - parameter source : A sexagesimal string
     /// - parameter separator : The separator used to parse the string. Defaults to ":".
     /// - parameter base : The system you are using to parse the source. Defaults to 60.
@@ -115,7 +168,7 @@ public enum AGao {
     /// - parameter base : The system you are using to finalize the result. Defaults to 60.
     public static func getStringFrom60(_ source: Double,
                                        separators: [String] = [":"],
-                                       numberFormatter: (Double, Int) -> String = { num, _ in keep0sDouble(num, 2) },
+                                       numberFormatter: (Double, Int) -> String = defaultFormatter,
                                        base: Double = 60) -> String
     {
         let numberOfSeparators = separators.count
@@ -158,7 +211,7 @@ public enum AGao {
     public static func sumOf60s(_ source: [String],
                                 separatorOfSource separator: Character = ":",
                                 separators: [String] = [":"],
-                                numberFormatter: (Double, Int) -> String = { num, _ in keep0sDouble(num, 2) },
+                                numberFormatter: (Double, Int) -> String = defaultFormatter,
                                 base: Double = 60)
         throws -> (inStr: String, inDouble: Double)
     {
@@ -173,6 +226,71 @@ public enum AGao {
             inStr: getStringFrom60(sumOfResult, separators: separators, numberFormatter: numberFormatter, base: base),
             inDouble: sumOfResult
         )
+    }
+
+    public struct Time60: Comparable, AdditiveArithmetic, Equatable {
+        /// The actual amount parsed from the string initially.
+        var amount: Double
+        /// How each number would look like.
+        ///  The first argument is the number itself.
+        ///  The second argument is the number of power of 60 that the current number is using.
+        var formatter: (Double, Int) -> String
+        /// The system you are using to finalize the result. Defaults to 60.
+        var base: Double = 60
+        /// The separators used to join the numbers together.
+        var separators = [":"]
+        /// The formatted "number:number" string.
+        var formatted: String {
+            getStringFrom60(amount,
+                            separators: separators,
+                            numberFormatter: formatter,
+                            base: base)
+        }
+
+        init(_ source: String,
+             separator: Character = ":",
+             formatter: @escaping (Double, Int) -> String = defaultFormatter,
+             base: Double = 60,
+             separators: [String] = [":"])
+        {
+            let amount = (try? get60FromStrings(source, separator: separator, base: base)) ?? Double.nan
+            self.amount = amount
+            self.formatter = formatter
+            self.base = base
+            self.separators = separators
+        }
+
+        init(amount: Double,
+             formatter: @escaping (Double, Int) -> String = defaultFormatter,
+             base: Double = 60,
+             separators: [String] = [":"])
+        {
+            self.amount = amount
+            self.formatter = formatter
+            self.base = base
+            self.separators = separators
+        }
+
+        public static var zero: AGao.Time60 = .init(amount: 0)
+        public static func < (lhs: AGao.Time60, rhs: AGao.Time60) -> Bool {
+            lhs.amount < rhs.amount
+        }
+
+        public static func == (lhs: AGao.Time60, rhs: AGao.Time60) -> Bool {
+            lhs.amount == rhs.amount
+        }
+
+        public static func + (lhs: AGao.Time60, rhs: AGao.Time60) -> AGao.Time60 {
+            var result = lhs
+            result.amount += rhs.amount
+            return result
+        }
+
+        public static func - (lhs: AGao.Time60, rhs: AGao.Time60) -> AGao.Time60 {
+            var result = lhs
+            result.amount -= rhs.amount
+            return result
+        }
     }
 
     /// - parameter source : The string to be separated.

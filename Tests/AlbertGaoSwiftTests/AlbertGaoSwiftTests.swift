@@ -20,5 +20,8 @@ final class AlbertGaoSwiftTests: XCTestCase {
 //        jsContext?.setObject(AGao.self, forKeyedSubscript: "AGao" as (NSCopying & NSObjectProtocol))
 //        let result = jsContext?.evaluateScript("AGao.")
 //        print(result as Any)
+        let time0 = AGao.Time60("1:00:10")
+        let time1 = AGao.Time60("12:20")
+        print((time0 + time1).formatted)
     }
 }
