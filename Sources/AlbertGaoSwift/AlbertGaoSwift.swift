@@ -192,7 +192,10 @@ public enum AGao {
                 /// 被除数
                 let divider: Double = pow(base, Double(thisLevel))
                 /// 当前Level被整除后的数字
-                let valueOfThisLevel: Double = floor(absValue / divider)
+                let valueOfThisLevel: Double =
+                    index == numberOfSeparators ?
+                    absValue :
+                    floor(absValue / divider)
                 /// 当前level
                 let formattedValueOfThisLevel = numberFormatter(valueOfThisLevel, thisLevel)
                 absValue -= divider * valueOfThisLevel
@@ -214,6 +217,7 @@ public enum AGao {
     ///                  The first argument is the number itself.
     ///                  The second argument is the number of power of 60 that the current number is using.
     /// - parameter base : The system you are using to finalize the result. Defaults to 60.
+    /// @deprecated
     public static func sumOf60s(_ source: [String],
                                 separatorOfSource separator: Character = ":",
                                 separators: [String] = [":"],
