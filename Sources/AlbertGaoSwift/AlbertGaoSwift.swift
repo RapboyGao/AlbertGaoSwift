@@ -160,6 +160,10 @@ public enum AGao {
         return isMinus ? -result : result
     }
 
+    public struct Parse60Result {
+        public let numbers: [Double], formatted: String, isMinus: Bool
+    }
+
     /// - parameter source : A sexagesimal string
     /// - parameter separators : The separators used to join the numbers together.
     /// - parameter numberFormatter : How each number would look like.
@@ -169,12 +173,13 @@ public enum AGao {
     public static func getStringFrom60(_ source: Double,
                                        separators: [String] = [":"],
                                        numberFormatter: (Double, Int) -> String = defaultFormatter,
-                                       base: Double = 60) -> String
+                                       base: Double = 60) -> Parse60Result
     {
         let numberOfSeparators = separators.count
         if numberOfSeparators <= 0 {
-            return numberFormatter(source, 0)
+            return Parse60Result(numbers: [Double](), formatted: numberFormatter(source, 0), isMinus: false)
         } else {
+            var numbers: [Double] = []
             /// 该source是否为负数
             let isMinus = source.isLess(than: 0)
             /// 该source的绝对值，后面会逐渐减少
@@ -192,12 +197,13 @@ public enum AGao {
                 let formattedValueOfThisLevel = numberFormatter(valueOfThisLevel, thisLevel)
                 absValue -= divider * valueOfThisLevel
                 result.append(formattedValueOfThisLevel)
+                numbers.append(valueOfThisLevel)
                 if index < numberOfSeparators {
                     let thisSeparator: String = separators[index]
                     result.append(thisSeparator)
                 }
             }
-            return result
+            return Parse60Result(numbers: numbers, formatted: result, isMinus: isMinus)
         }
     }
 
@@ -223,74 +229,9 @@ public enum AGao {
             sumOfResult += item
         }
         return (
-            inStr: getStringFrom60(sumOfResult, separators: separators, numberFormatter: numberFormatter, base: base),
+            inStr: getStringFrom60(sumOfResult, separators: separators, numberFormatter: numberFormatter, base: base).formatted,
             inDouble: sumOfResult
         )
-    }
-
-    public struct Time60: Comparable, AdditiveArithmetic, Equatable {
-        /// The actual amount parsed from the string initially.
-        var amount: Double
-        /// How each number would look like.
-        ///  The first argument is the number itself.
-        ///  The second argument is the number of power of 60 that the current number is using.
-        var formatter: (Double, Int) -> String
-        /// The system you are using to finalize the result. Defaults to 60.
-        var base: Double = 60
-        /// The separators used to join the numbers together.
-        var separators = [":"]
-        /// The formatted "number:number" string.
-        var formatted: String {
-            getStringFrom60(amount,
-                            separators: separators,
-                            numberFormatter: formatter,
-                            base: base)
-        }
-
-        init(_ source: String,
-             separator: Character = ":",
-             formatter: @escaping (Double, Int) -> String = defaultFormatter,
-             base: Double = 60,
-             separators: [String] = [":"])
-        {
-            let amount = (try? get60FromStrings(source, separator: separator, base: base)) ?? Double.nan
-            self.amount = amount
-            self.formatter = formatter
-            self.base = base
-            self.separators = separators
-        }
-
-        init(amount: Double,
-             formatter: @escaping (Double, Int) -> String = defaultFormatter,
-             base: Double = 60,
-             separators: [String] = [":"])
-        {
-            self.amount = amount
-            self.formatter = formatter
-            self.base = base
-            self.separators = separators
-        }
-
-        public static var zero: AGao.Time60 = .init(amount: 0)
-        public static func < (lhs: AGao.Time60, rhs: AGao.Time60) -> Bool {
-            lhs.amount < rhs.amount
-        }
-
-        public static func == (lhs: AGao.Time60, rhs: AGao.Time60) -> Bool {
-            lhs.amount == rhs.amount
-        }
-
-        public static func + (lhs: AGao.Time60, rhs: AGao.Time60) -> AGao.Time60 {
-            var result = lhs
-            result.amount += rhs.amount
-            return result
-        }
-
-        public static func - (lhs: AGao.Time60, rhs: AGao.Time60) -> AGao.Time60 {
-            var result = lhs
-            result.amount -= rhs.amount
-            return result
-        }
     }
 
     /// - parameter source : The string to be separated.
@@ -348,5 +289,70 @@ public enum AGao {
             .replacingOccurrences(of: #"}"#, with: #"\}"#)
             .replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: #"/"#, with: "\\/")
+    }
+}
+
+public struct Time60: Comparable, AdditiveArithmetic, Equatable {
+    /// The actual amount parsed from the string initially.
+    public var amount: Double
+    /// How each number would look like.
+    ///  The first argument is the number itself.
+    ///  The second argument is the number of power of 60 that the current number is using.
+    public var formatter: (Double, Int) -> String
+    /// The system you are using to finalize the result. Defaults to 60.
+    public var base: Double = 60
+    /// The separators used to join the numbers together.
+    public var separators = [":"]
+    /// The formatted "number:number" string.
+    public var parsed: AGao.Parse60Result {
+        AGao.getStringFrom60(amount,
+                             separators: separators,
+                             numberFormatter: formatter,
+                             base: base)
+    }
+
+    init(source: String,
+         separator: Character = ":",
+         formatter: @escaping (Double, Int) -> String = AGao.defaultFormatter,
+         base: Double = 60,
+         separators: [String] = [":"])
+    {
+        let amount = (try? AGao.get60FromStrings(source, separator: separator, base: base)) ?? Double.nan
+        self.amount = amount
+        self.formatter = formatter
+        self.base = base
+        self.separators = separators
+    }
+
+    init(amount: Double,
+         formatter: @escaping (Double, Int) -> String = AGao.defaultFormatter,
+         base: Double = 60,
+         separators: [String] = [":"])
+    {
+        self.amount = amount
+        self.formatter = formatter
+        self.base = base
+        self.separators = separators
+    }
+
+    public static var zero: Time60 = .init(amount: 0)
+    public static func < (lhs: Time60, rhs: Time60) -> Bool {
+        lhs.amount < rhs.amount
+    }
+
+    public static func == (lhs: Time60, rhs: Time60) -> Bool {
+        lhs.amount == rhs.amount
+    }
+
+    public static func + (lhs: Time60, rhs: Time60) -> Time60 {
+        var result = lhs
+        result.amount += rhs.amount
+        return result
+    }
+
+    public static func - (lhs: Time60, rhs: Time60) -> Time60 {
+        var result = lhs
+        result.amount -= rhs.amount
+        return result
     }
 }
