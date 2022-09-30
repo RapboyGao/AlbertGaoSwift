@@ -311,11 +311,11 @@ public struct Time60: Comparable, AdditiveArithmetic, Equatable {
                              base: base)
     }
 
-    init(source: String,
-         separator: Character = ":",
-         formatter: @escaping (Double, Int) -> String = AGao.defaultFormatter,
-         base: Double = 60,
-         separators: [String] = [":"])
+    public init(source: String,
+                separator: Character = ":",
+                formatter: @escaping (Double, Int) -> String = AGao.defaultFormatter,
+                base: Double = 60,
+                separators: [String] = [":"])
     {
         let amount = (try? AGao.get60FromStrings(source, separator: separator, base: base)) ?? Double.nan
         self.amount = amount
@@ -324,10 +324,10 @@ public struct Time60: Comparable, AdditiveArithmetic, Equatable {
         self.separators = separators
     }
 
-    init(amount: Double,
-         formatter: @escaping (Double, Int) -> String = AGao.defaultFormatter,
-         base: Double = 60,
-         separators: [String] = [":"])
+    public init(amount: Double,
+                formatter: @escaping (Double, Int) -> String = AGao.defaultFormatter,
+                base: Double = 60,
+                separators: [String] = [":"])
     {
         self.amount = amount
         self.formatter = formatter
